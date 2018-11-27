@@ -1,0 +1,207 @@
+.\"
+.\" FirePass VPN login client.
+.\"
+.\" Copyright 2008 Geoff Levand
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License, Version 2 as
+.\" published by the Free Software Foundation.
+.\"
+.\" Maintainer's Notes:
+.\"  * For syntax help see the man pages for 'man-pages', 'mdoc' and
+.\"    'mdoc.samples'.
+.\"  * To check syntax use this:
+.\"    'groff -C -mtty-char -Tutf8 -man fp-login.1.in'.
+.\"  * To check format use this: 'man ./fp-login.1.in'.
+.\"
+.Dd ""
+.Dt fp-login 1
+.Os
+.\"
+.Sh NAME
+.\" ====
+.Nm fp-login
+.Nd FirePass VPN login client
+.\"
+.Sh SYNOPSIS
+.\" ========
+.Nm
+.Op Fl a, -auth-format Ar auth-format
+.Op Fl c, -certificate Ar certificate
+.Op Fl C, -config Ar config
+.Op Fl f, -favorite-id Ar favorite-id
+.Op Fl h, -help
+.Op Fl H, -host Ar host
+.Op Fl n, -nameserver Ar nameserver
+.Op Fl N, -network Ar network
+.Op Fl p, -port Ar port
+.Op Fl u, -user Ar user
+.Op Fl v, -verbose
+.Op Fl V, -version
+.\"
+.Sh DESCRIPTION
+.\" ===========
+The fp-login client is used to remotely log into a FirePass VPN server.
+.\"
+.Sh OPTIONS
+.\" =======
+.Bl -tag -width indent
+.\"
+.It Fl a, -auth-format Ar auth-format
+Specifies the format of the authentication data sent to the VPN server.
+The default
+.Ar auth-format
+is 'U:P'. See the
+.Ar NOTES
+section below for more information on the
+.Ar auth-format
+value.
+.\"
+.It Fl c, -certificate Ar certificate
+Use the x509 certificate file
+.Ar certificate .
+The file must be in the standard pem format.
+This option is not yet fully implemented.
+.\"
+.It Fl C, -config Ar config
+Use the configuration file
+.Ar config .
+Use of this option will cause fp-login to bypass processing of its default
+configuration files. See the
+.Ar NOTES
+section below for more information.
+.\"
+.It Fl f, -favorite-id Ar favorite-id
+Connect to the FirePass VPN with the favorite ID
+.Ar favorite-id .
+The default
+.Ar favorite-id
+is 'Z=0,1'.
+This will work for most VPNs.
+.\"
+.It Fl h, -help
+Print a help message.
+.\"
+.It Fl H, -host Ar host
+Connect to the remote FirePass VPN server
+.Ar host .
+.\"
+.It Fl n, -nameserver Ar nameserver
+Add the name server
+.Ar nameserver
+to the local resolver configuration. This option specifies the DNS nameservers
+for the remote network, and can be specified multiple times.
+The current implementation only supports a single
+.Sy --nameserver
+option.
+.\"
+.It Fl N, -network Ar network
+Add the remote network
+.Ar network
+to the local routing tables for this VPN connection. Must be in
+the 'target/prefix' format.
+.\"
+.It Fl p, -port Ar port
+Use the remote FirePass server port
+.Ar port .
+The default
+.Ar port
+value is 443 (https).
+.\"
+.It Fl u, -user Ar user
+Use the user login name
+.Ar user .
+.\"
+.It Fl v, -verbose
+Program verbosity level. The level is additive.
+.Sy -vvv
+will give a verbose output.
+.\"
+.It Fl V, -version
+Display the program version number.
+.El
+.Sh NOTES
+.\" =====
+.\"
+.Ss One Time Token
+.\" --------------
+fp-login prompts the user for the input of a one time token
+.Ar token .
+This value is used along with the
+.Ar user , Ar password ,
+and
+.Ar auth-format
+values to format the username and password fields of the authentication data
+sent to the VPN server. The format required for the authentication request is
+dictated by the configuration of the VPN server. Formats supported by fp-login
+are:
+.Pp
+.Bd -literal -offset indent
+.Em "auth-format   username     password"
+U:P           user         password
+U:PT          user         passwordtoken
+U:P,T         user         password,token
+UT:P          usertoken    password
+U,T:P         user,token   password
+.Ed
+.Pp
+For unsupported authentication formats use the 'U:P' format and enter the token
+value directly into the
+.Ar user
+or
+.Ar password
+prompt as required by the login server and enter an empty value
+at the
+.Ar token
+prompt.
+.\"
+.Ss Configuration File Example
+.\" --------------------------
+fp-login configuration files are simple ASCII text files formatted as
+a 'key=value' pair per line. A typical configuration file would include
+lines similar to the following:
+.Bd -literal -offset indent
+auth-format=U,K:P
+certificate=/var/certs/myserver.pem
+favorite-id=Z=0,1
+host=myserver.mydomain.com
+nameserver=192.168.1.1
+nameserver=192.168.1.2
+port=123
+network=192.168.0.0/16
+user=xxyyzz
+.Ed
+.\"
+.Ss Configuration Search
+.\" --------------------
+The fp-login configuration search order is to first use any
+configuration values specified on the command line, then to
+use any values from a configuration file
+.Ar config
+specified with the
+.Sy --config
+option on the command line. If no
+.Sy --config
+option was specified, fp-login will use any values found in the user
+configuration file
+.Ar  .fp-login.conf
+from the user's home directory,
+and then any values found in the system configuration file
+.Ar  /etc/fp-login.conf .
+The user will then be propmted for any missing values.
+.Pp
+Note that when a configuration file is specified with the
+.Sy --config
+option, fp-login does not process any other configuration files.
+.\"
+.Sh FILES
+.\" =====
+.Ar /etc/fp-login.conf , Ar $HOME/.fp-login.conf
+.\"
+.Sh SEE ALSO
+.\" ========
+.Xr resolv.conf 5 , Xr pppd 8 , Xr chat 8
+.\"
+.Sh REPORTING BUGS
+.\" ==============
+Send bug reports to @PACKAGE_BUGREPORT@.

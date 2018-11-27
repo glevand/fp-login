@@ -1,0 +1,44 @@
+## configure.ac -- Process this file with autoconf to produce configure
+#
+#  Copyright 2008 Geoff Levand
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License, Version 2 as
+# published by the Free Software Foundation.
+#
+
+AC_INIT([fp-login], [@version@], [Geoff Levand <geoff@infradead.org>])
+
+AC_PREFIX_DEFAULT([/usr/local])
+
+AC_PROG_CC
+AM_INIT_AUTOMAKE
+
+AC_SUBST([DESTDIR])
+
+AC_CHECK_LIB([ssl], [SSL_library_init], ,
+	[AC_MSG_FAILURE(
+		[Install the libssl (openssl) development package to build])])
+
+AC_CHECK_HEADER([CoreFoundation/CoreFoundation.h],
+	[use_corefoundation=yes], [use_corefoundation=no])
+AM_CONDITIONAL([COND_COREFOUNDATION], [test ${use_corefoundation} = yes])
+
+AC_CHECK_MEMBER([struct rt_msghdr.rtm_flags],
+	[AC_DEFINE([HAVE_STRUCT_RT_MSGHDR], [1], [Define to 1 if you have the
+		struct rt_msghdr, and to 0 if you don't.])],
+	[AC_DEFINE([HAVE_STRUCT_RT_MSGHDR], [0], [Define to 1 if you have the
+		struct rt_msghdr, and to 0 if you don't.])],
+	[[#include <net/route.h>]])
+
+AC_CHECK_MEMBER([struct rtentry.rt_flags],
+	[AC_DEFINE([HAVE_STRUCT_RTENTRY], [1], [Define to 1 if you have the
+		struct rtentry, and to 0 if you don't.])],
+	[AC_DEFINE([HAVE_STRUCT_RTENTRY], [0], [Define to 1 if you have the
+		struct rtentry, and to 0 if you don't.])],
+	[[#include <net/route.h>]])
+
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_FILES([Makefile])
+
+AC_OUTPUT
